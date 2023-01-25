@@ -1,7 +1,13 @@
+import 'dart:js';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mynotes/firebase_options.dart';
+
+import 'package:mynotes/Views/loginviews.dart';
+import 'package:mynotes/Views/regsiterview.dart';
+
+import 'firebase_options.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,57 +17,23 @@ void main() {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginView(),
+      home: const HomePage(),
+      routes: {
+        "/login/":(context) => const LoginView(),
+        "/register/":(context) =>const  RegisterView()
+      },
     ),
   );
 }
 
-
-class RegisterView extends StatefulWidget {
-  const RegisterView({super.key});
-
-  @override
-  State<RegisterView> createState() => _RegisterViewState();
-}
-
-class _RegisterViewState extends State<RegisterView> {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
-
-  @override
-  State<LoginView> createState() => _LoginViewState();
-}
-
-class _LoginViewState extends State<LoginView> {
-  late final TextEditingController _email;
-  late final TextEditingController _password;
-
-  @override
-  void initState() {
-    _email = TextEditingController();
-    _password = TextEditingController();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _email.dispose();
-    _password.dispose();
-    super.dispose();
-  }
-
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Sign Up",
+          "Home Page ",
           style: TextStyle(fontSize: 25),
         ),
       ),
@@ -69,36 +41,44 @@ class _LoginViewState extends State<LoginView> {
         future: Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform),
         builder: (context, snapshot) {
-          return Column(
-            children: [
-              TextField(
-                controller: _email,
-                enableSuggestions: false,
-                autocorrect: false,
-                keyboardType: TextInputType.emailAddress,
-                decoration:
-                    const InputDecoration(hintText: "  Enter you email "),
-              ),
-              TextField(
-                controller: _password,
-                obscureText: false,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration:
-                    const InputDecoration(hintText: "  Enter you password  "),
-              ),
-              TextButton(
-                  onPressed: () async {
-                    final email = _email.text;
-                    final password = _password.text;
-                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                        email: email, password: password);
-                  },
-                  child: const Text('Sign Up ')),
-            ],
-          );
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              /*  final user = FirebaseAuth.instance.currentUser;
+              if (user?.emailVerified ?? false) {
+                return const Text('Done ');
+              } else {
+                return const  VerifyEmailView();
+              }*/
+              return const LoginView();
+            default:
+              return const Text("Loading ");
+          }
         },
       ),
+    );
+  }
+}
+
+class VerifyEmailView extends StatefulWidget {
+  const VerifyEmailView({super.key});
+
+  @override
+  State<VerifyEmailView> createState() => _VerifyEmailViewState();
+}
+
+class _VerifyEmailViewState extends State<VerifyEmailView> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text("Please verify your email address"),
+        TextButton(
+            onPressed: () async {
+              final user = FirebaseAuth.instance.currentUser;
+              await user?.sendEmailVerification();
+            },
+            child: const Text("Send verification link "))
+      ],
     );
   }
 }
