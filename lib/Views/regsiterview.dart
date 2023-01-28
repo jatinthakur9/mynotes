@@ -64,13 +64,11 @@ class _RegisterViewState extends State<RegisterView> {
                 } on FirebaseAuthException catch (e) {
                   if (e.code == "weak-password") {
                     devtools.log("weak-password");
-                  }else if(e.code== "email-already-in-use"){
-                     devtools.log("email-already-in-use");
-                   
+                  } else if (e.code == "email-already-in-use") {
+                    devtools.log("email-already-in-use");
+                  } else if (e.code == "invalid-email") {
+                    devtools.log("invalid-email");
                   }
-                    else if(e.code =="invalid-email"){
-                      devtools.log("invalid-email");
-                     }
                 }
               },
               child: const Text('Sign Up ')),
